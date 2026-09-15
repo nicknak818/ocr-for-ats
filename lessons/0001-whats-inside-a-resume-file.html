@@ -1,0 +1,172 @@
+<title>Lesson 1 · What's inside a resume file</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/course.css">
+<main>
+<p class="kicker">Lesson 1 · OCR for ATS · Scorecard question 1: Input</p>
+<h1>What's inside a resume file</h1>
+<p class="subtitle">Before you judge an OCR technique, check whether the file gives it anything to read.</p>
+
+<p class="win"><strong>Your win today:</strong> open any PDF or DOCX and say, with evidence, whether it needs OCR, and what can still go wrong if it doesn't. About 20 minutes.</p>
+
+<h2>Three ways a resume holds its words</h2>
+<p>These three files look identical on screen. Each is the same synthetic resume for "Jordan Sample". A parser gets three very different things.</p>
+
+<div class="trio">
+  <div class="card">
+    <h4>DOCX</h4>
+    <p class="what">Characters, stored as text in XML</p>
+<pre>&lt;w:p&gt;
+  &lt;w:r&gt;
+    &lt;w:t&gt;Jordan Sample&lt;/w:t&gt;
+  &lt;/w:r&gt;
+&lt;/w:p&gt;</pre>
+    <p class="so">Read the XML. <strong>No OCR.</strong></p>
+  </div>
+  <div class="card">
+    <h4>Born-digital PDF</h4>
+    <p class="what">Glyphs drawn at positions on a page</p>
+<pre>/F4 34.66 Tf
+1 0 0 -1 48 85 Tm
+&lt;002D&gt; Tj
+19.94 0 Td &lt;0052&gt; Tj
+21.84 0 Td &lt;0055&gt; Tj
+…</pre>
+    <p class="so">Pick font F4, move to a spot, draw glyph 2D (J), step right, draw 52 (o)… Map glyphs to letters, rebuild the order. <strong>No OCR.</strong></p>
+  </div>
+  <div class="card">
+    <h4>Image-only PDF</h4>
+    <p class="what">One picture of the page</p>
+<pre>1 image, 1632 × 2112 pixels
+0 fonts
+0 characters</pre>
+    <p class="so">Nothing to read. <strong>OCR needed.</strong></p>
+  </div>
+</div>
+
+<p><strong>DOCX.</strong> A .docx file is a ZIP archive of XML files, called parts. The body sits in <code>word/document.xml</code> as paragraphs (<code>&lt;w:p&gt;</code>) made of runs (<code>&lt;w:r&gt;</code>) that hold text (<code>&lt;w:t&gt;</code>) (<a href="https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document">Microsoft Learn</a>). The words are already characters, so there is nothing to recognise. Headers and footers live in their own parts, and text boxes are separate "stories", so a careless parser can still miss text.</p>
+
+<p><strong>Born-digital PDF.</strong> A PDF is a list of drawing instructions. The middle card is real: it's the top of our sample PDF, printed by Chrome. Each <code>Tj</code> draws one glyph by its number in the font, and a separate map in the file turns glyph numbers back into Unicode letters for copy-paste (<a href="https://pdfminersix.readthedocs.io/en/latest/faq.html">pdfminer.six FAQ</a>). There are no words, lines or columns in there. In pdfminer.six's words, a PDF "is only aware of the characters and their placement" (<a href="https://pdfminersix.readthedocs.io/en/latest/topic/converting_pdf_to_text.html">pdfminer.six</a>). Extractors rebuild words, lines and reading order from positions. Characters you can extract this way are what people call a <em>text layer</em>.</p>
+
+<p><strong>Image-only PDF.</strong> A scanned or flattened PDF holds a picture of each page and no characters at all. Text extractors get nothing: pdfplumber's README says it works best on machine-generated PDFs and does no OCR (<a href="https://github.com/jsvine/pdfplumber">pdfplumber</a>). Only OCR can turn pixels back into characters. This is the file type where OCR earns its keep, which is why your test set will include it.</p>
+
+<h2>Look inside for yourself</h2>
+<p>The inspector opens a file inside this page and shows what a parser gets. Nothing is uploaded, so you can try your own resume too.</p>
+<ol class="steps">
+  <li><strong>DOCX.</strong> Find <code>Jordan Sample</code> inside a <code>&lt;w:t&gt;</code>. Which part of the ZIP holds the body text?</li>
+  <li><strong>Text-layer PDF.</strong> Compare <em>What the file stores</em> with <em>Read straight across</em>. Where does the second one mix the sidebar into the job history?</li>
+  <li><strong>Flattened PDF.</strong> The page looks the same. How many characters does it have?</li>
+</ol>
+<div class="inspector" id="inspector"></div>
+
+<h2>A text layer can still fail you</h2>
+<p>Finding characters isn't the same as having the resume. Three things go wrong, and OCR fixes only one of them.</p>
+
+<h3>1 · Wrong order</h3>
+<p>Two-column resumes put contact details and skills beside the job history. A reader that goes straight across the page merges the two, as you just saw. The fix is <em>layout analysis</em>, which finds the columns before reading them (rung 2 on the <a href="../reference/ocr-compute-ladder.html">compute ladder</a>). OCR won't help, because the characters were never the problem. Alibaba's production resume parser added a layout detector for exactly this: about 20% of its resumes were multi-column (<a href="https://arxiv.org/abs/2510.09722">arXiv 2510.09722</a>).</p>
+
+<h3>2 · Garbled characters</h3>
+<p>If the glyph-to-Unicode map is missing or incomplete, the page still looks perfect, but every extractor gets junk. pdfminer.six prints placeholders like <code>(cid:72)</code> (<a href="https://pdfminersix.readthedocs.io/en/latest/faq.html">pdfminer.six FAQ</a>). The FAQ's quick test: copy a line from a PDF viewer into a text editor. Gibberish there means gibberish for your parser, so treat the page as a picture and OCR it.</p>
+
+<h3>3 · Someone else's OCR</h3>
+<p>Some scanned PDFs already carry a text layer that an earlier tool added by running OCR. Making scans searchable this way is exactly what <a href="https://ocrmypdf.readthedocs.io/en/latest/introduction.html">OCRmyPDF</a> does. The text is selectable, but it keeps that tool's mistakes. For evaluation this is a trap: if your "scanned" test files still have a text layer, a vendor can score well without doing any OCR. Before you trust a flattened test file, check that it really has zero characters.</p>
+
+<h2>The triage</h2>
+<p>Four questions, in order, for any resume file. They're also on the <a href="../reference/input-triage.html">input triage card</a>.</p>
+<ol class="steps">
+  <li><strong>Is it a DOCX?</strong> Read the XML, including headers, footers and text boxes. OCR only embedded images that contain text.</li>
+  <li><strong>PDF: does the page have a text layer?</strong> If not, OCR the page.</li>
+  <li><strong>Does it copy-paste as real words?</strong> If not, treat it as a picture and OCR it.</li>
+  <li><strong>Is it in reading order?</strong> Columns or sidebars need layout analysis. Still no OCR.</li>
+</ol>
+<p class="legend">A Mac caveat for step 3: Preview's Live Text can select words inside pictures by recognising them on the fly (<a href="https://support.apple.com/guide/preview/interact-with-text-in-a-photo-prvw625a5b2c/mac">Apple Support</a>). Selectable text doesn't prove a file has a text layer. The inspector does.</p>
+<p>This is question 1 of your <a href="../reference/evaluation-scorecard.html">evaluation scorecard</a>. Put it to any vendor: <em>"Do you read the text layer when one exists, or OCR every page? And what do you do with DOCX?"</em> A product that OCRs born-digital files pays for compute it doesn't need, and risks recognition errors the text layer would have avoided.</p>
+
+<div class="callout"><p><strong>Why this matters at each stage.</strong> <em>Tech:</em> it decides what a model is even given. <em>Validation:</em> your test set needs all three file types, or OCR never gets tested. <em>Benchmarking:</em> split every score by file type. <em>Production:</em> route each file to the cheapest rung that can read it.</p></div>
+
+<h2>Check yourself</h2>
+<div class="recall">
+  <p><strong>From memory first.</strong> A recruiter asks why their two-column resume came out scrambled when "the PDF has text in it". Answer in two sentences, then compare.</p>
+  <textarea aria-label="Your answer"></textarea>
+  <details><summary>Compare with a model answer</summary>
+    <p>The PDF stores each character with a position on the page, not in reading order, so the parser read straight across both columns and mixed the sidebar into the job history. It needs layout analysis to find the columns first; OCR wouldn't help, because the characters were already right.</p>
+  </details>
+</div>
+
+<div class="quiz" data-answer="0">
+  <p class="q"><strong>1.</strong> A candidate uploads <code>resume.docx</code>, typed in Word. What does reading its body text require?</p>
+  <ol class="opts">
+    <li>Parse the XML inside the ZIP</li>
+    <li data-why="There are no pixels to recognise: the words are already characters.">Render each page, then run OCR</li>
+    <li data-why="A vision model reads images. A DOCX already stores the text itself.">Show page images to a model</li>
+    <li data-why="Glyph numbers belong to PDFs. A DOCX stores the characters themselves.">Map glyph numbers to the letters</li>
+  </ol>
+  <div class="explain">Right. The body is <code>&lt;w:t&gt;</code> elements in <code>word/document.xml</code>. Read those, plus the header, footer and text-box content. OCR only images embedded in the file.</div>
+</div>
+
+<div class="quiz" data-answer="2">
+  <p class="q"><strong>2.</strong> The inspector shows a PDF page with 0 characters and 1 image, though it looks like a normal resume. What's the next step?</p>
+  <ol class="opts">
+    <li data-why="There's no text to sort. The page has zero characters.">Sort its text into column order</li>
+    <li data-why="There's nothing to copy. The page is a picture.">Copy the text into an editor</li>
+    <li>Run OCR on the page image</li>
+    <li data-why="That works for a DOCX. A PDF isn't a ZIP of XML parts.">Unzip it and read the XML</li>
+  </ol>
+  <div class="explain">Right. Zero characters plus an image means the page is only pixels, and OCR is the only way back to text (rung 1 or higher on the <a href="../reference/ocr-compute-ladder.html">ladder</a>).</div>
+</div>
+
+<div class="quiz" data-answer="1">
+  <p class="q"><strong>3.</strong> A two-column PDF has a clean text layer, yet the parsed profile lists "Python" as an employer. What fixes it?</p>
+  <ol class="opts">
+    <li data-why="The characters are already correct. Recognising them again doesn't change their order.">OCR to reread every character</li>
+    <li>Layout analysis to restore order</li>
+    <li data-why="Resolution matters for pixels. Here the characters are fine; their order isn't.">Rendering at a higher resolution</li>
+    <li data-why="Every word is spelled right. They're just in the wrong place.">Running spellcheck on the text</li>
+  </ol>
+  <div class="explain">Right. The skills sidebar was read across into the job history. Layout analysis finds the columns first, then reads each in turn (rung 2 on the <a href="../reference/ocr-compute-ladder.html">ladder</a>).</div>
+</div>
+
+<div class="quiz" data-answer="3">
+  <p class="q"><strong>4.</strong> You "flatten" 50 resumes for the OCR part of your test set, but the inspector still finds a text layer on every page. Why does that matter?</p>
+  <ol class="opts">
+    <li data-why="Size isn't the issue. Think about what a smart pipeline would do with that text.">The files would become too large</li>
+    <li data-why="The picture can be perfect. The problem is the text sitting alongside it.">The page images would lose quality</li>
+    <li data-why="Extra text barely slows anything. Ask what the test is still measuring.">Text layers slow down every parser</li>
+    <li>A vendor could skip OCR entirely</li>
+  </ol>
+  <div class="explain">Right. A sensible pipeline reads an existing text layer and never runs OCR, so your "OCR" test would only measure text extraction. Flattened test files must show zero characters.</div>
+</div>
+
+<div class="quiz" data-answer="2">
+  <p class="q"><strong>5.</strong> A vendor reports 99% accuracy on resumes. Their test set was all born-digital PDFs and DOCX files. What did that number mostly measure?</p>
+  <ol class="opts">
+    <li data-why="Born-digital files have no scanned pages. Their characters come with the file.">Their OCR on hard scanned pages</li>
+    <li data-why="No photographs were tested, and photos are outside our scope anyway.">How they cope with photographed pages</li>
+    <li>Reading text layers, not their OCR</li>
+    <li data-why="Accuracy isn't speed. Ask what kind of reading the test required.">Their speed on a large batch</li>
+  </ol>
+  <div class="explain">Right. Every file carried its own characters, so the score mostly reflects extraction and ordering. Ask for results split by file type, including image-only PDFs. That's scorecard question 6, evidence quality.</div>
+</div>
+<p class="quiz-tally"></p>
+
+<h2>Read next</h2>
+<p><strong>Primary source:</strong> <a href="https://pdfminersix.readthedocs.io/en/latest/topic/converting_pdf_to_text.html">pdfminer.six, "Converting a PDF file to text"</a>. It's a short read showing how an extractor groups characters into lines and text boxes, which is the heart of the reading-order problem. For the DOCX side, skim <a href="https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document">Microsoft Learn: Structure of a WordprocessingML document</a>.</p>
+<p><strong>Next lesson:</strong> the compute ladder. You'll place any OCR technique by what it reads and what it costs, starting from today's three file types.</p>
+
+<footer>
+  <p><strong>Stuck or curious?</strong> Ask your teacher (Claude) in the chat. Follow-up questions are the fastest way through this. For example: "What would the inspector show for a Word file saved as PDF?"</p>
+  <p>Reference: <a href="../reference/input-triage.html">Input triage</a> · <a href="../reference/evaluation-scorecard.html">Evaluation scorecard</a> · <a href="../reference/ocr-compute-ladder.html">OCR compute ladder</a></p>
+  <p>Sources: <a href="https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document">Microsoft Learn, WordprocessingML structure</a> · <a href="https://pdfminersix.readthedocs.io/en/latest/topic/converting_pdf_to_text.html">pdfminer.six, converting PDF to text</a> · <a href="https://pdfminersix.readthedocs.io/en/latest/faq.html">pdfminer.six FAQ</a> · <a href="https://github.com/jsvine/pdfplumber">pdfplumber README</a> · <a href="https://ocrmypdf.readthedocs.io/en/latest/introduction.html">OCRmyPDF introduction</a> · <a href="https://arxiv.org/abs/2510.09722">arXiv 2510.09722</a></p>
+  <p>Samples: one synthetic resume, built three ways by <code>assets/samples/make_samples.sh</code>. No real person's data.</p>
+</footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="../assets/samples/samples.js"></script>
+<script src="../assets/file-inspector.js"></script>
+<script src="../assets/quiz.js"></script>
+<script>
+  FileInspector.mount(document.getElementById("inspector"), { samples: window.RESUME_SAMPLES });
+  Quiz.mount(document);
+</script>

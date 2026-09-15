@@ -1,0 +1,50 @@
+<title>Input Triage</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/course.css">
+<main>
+<p class="kicker">Reference · OCR for ATS · Scorecard question 1</p>
+<h1>Input triage: does this file need OCR?</h1>
+<p class="subtitle">From <a href="../lessons/0001-whats-inside-a-resume-file.html">Lesson 1</a>. Facts checked 12 Sep 2026.</p>
+
+<div class="callout"><p><strong>OCR is for pixels.</strong> DOCX files and born-digital PDFs already contain characters. What breaks them is order and encoding, not recognition.</p></div>
+
+<h2>Three containers</h2>
+<div class="table-wrap"><table>
+<tr><th>File</th><th>Where the words are</th><th>How to read it</th><th>OCR?</th><th>Watch for</th></tr>
+<tr><td>DOCX</td><td>Characters in XML: <code>&lt;w:p&gt;</code> › <code>&lt;w:r&gt;</code> › <code>&lt;w:t&gt;</code> in <code>word/document.xml</code></td><td>Unzip, parse the XML</td><td>Only embedded images with text</td><td>Headers and footers in their own parts; text boxes as separate stories</td></tr>
+<tr><td>Born-digital PDF</td><td>Glyphs drawn at positions, plus a glyph-to-Unicode map</td><td>Extract the text layer, then rebuild reading order</td><td>No</td><td>Columns and sidebars; a garbled map, shown as <code>(cid:x)</code> or gibberish on copy-paste</td></tr>
+<tr><td>Image-only PDF</td><td>One picture per page, zero characters</td><td>Nothing to extract</td><td>Yes, every page</td><td>Scans carrying an earlier tool's OCR layer; "flattened" files that kept their text</td></tr>
+</table></div>
+
+<h2>Four questions, in order</h2>
+<ol>
+<li><strong>Is it a DOCX?</strong> Read the XML: body, headers, footers, text boxes. OCR only embedded images that contain text.</li>
+<li><strong>PDF: does the page have a text layer?</strong> If not, OCR the page.</li>
+<li><strong>Does it copy-paste as real words?</strong> If not, treat it as a picture and OCR it.</li>
+<li><strong>Is it in reading order?</strong> Columns or sidebars need layout analysis (<a href="ocr-compute-ladder.html">ladder</a> rung 2). Still no OCR.</li>
+</ol>
+
+<h2>Checks by hand</h2>
+<ul>
+<li><strong>DOCX:</strong> copy the file, rename the copy to <code>.zip</code>, open <code>word/document.xml</code> (<a href="https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document">Microsoft Learn</a>).</li>
+<li><strong>Encoding:</strong> paste a line from a PDF viewer into a text editor. Gibberish there means gibberish for any extractor (<a href="https://pdfminersix.readthedocs.io/en/latest/faq.html">pdfminer.six FAQ</a>).</li>
+<li><strong>Order, roughly:</strong> paste a whole page. Sidebar lines mixed into job bullets mean a layout problem.</li>
+<li><strong>Beware Live Text:</strong> Preview on a Mac can select words inside pictures by recognising them on the fly (<a href="https://support.apple.com/guide/preview/interact-with-text-in-a-photo-prvw625a5b2c/mac">Apple Support</a>). Selectable text doesn't prove a text layer.</li>
+<li><strong>Reliable:</strong> the file inspector in <a href="../lessons/0001-whats-inside-a-resume-file.html">Lesson 1</a> counts characters and images on each page.</li>
+</ul>
+
+<h2>Ask any vendor</h2>
+<ul>
+<li>Do you read the text layer when one exists, or OCR every page?</li>
+<li>What do you do with DOCX: parse the XML, or render it to images?</li>
+<li>How do you detect columns and rebuild reading order?</li>
+<li>Can you show accuracy split by file type, including image-only PDFs?</li>
+</ul>
+
+<footer>
+<p>Unclear on anything here? Ask your teacher (Claude) in the chat.</p>
+<p>Related: <a href="evaluation-scorecard.html">Evaluation scorecard</a> · <a href="ocr-compute-ladder.html">OCR compute ladder</a></p>
+<p>Sources: <a href="https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document">Microsoft Learn</a> · <a href="https://pdfminersix.readthedocs.io/en/latest/topic/converting_pdf_to_text.html">pdfminer.six</a> · <a href="https://pdfminersix.readthedocs.io/en/latest/faq.html">pdfminer.six FAQ</a> · <a href="https://github.com/jsvine/pdfplumber">pdfplumber</a> · <a href="https://ocrmypdf.readthedocs.io/en/latest/introduction.html">OCRmyPDF</a> · <a href="https://support.apple.com/guide/preview/interact-with-text-in-a-photo-prvw625a5b2c/mac">Apple Support: Live Text in Preview</a> · <a href="https://arxiv.org/abs/2510.09722">arXiv 2510.09722</a></p>
+</footer>
+</main>

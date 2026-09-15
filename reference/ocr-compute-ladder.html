@@ -1,0 +1,85 @@
+<title>OCR Compute Ladder</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/course.css">
+<main>
+<p class="kicker">Reference · OCR for ATS</p>
+<h1>The OCR compute ladder</h1>
+<p class="subtitle">Open-source ways to read a resume, cheapest rung first. Facts checked 12 Sep 2026. Scores and speeds are the sources' claims until our own lab reproduces them.</p>
+
+<div class="callout"><p><strong>Climb only as high as the document forces you.</strong> Most resumes arrive as born-digital PDF or DOCX files that already contain text, so the first move is to read that text layer, not to run OCR. What breaks ATS parsing is usually <em>reading order</em> (two columns, sidebars, header contact blocks), not reading characters. <a href="https://arxiv.org/abs/2510.09722">Alibaba's deployed resume parser</a> reads the PDF text layer and runs OCR only on image regions.</p></div>
+
+<p class="legend"><span class="cost">▮▯▯▯▯▯</span> relative compute per page &nbsp;·&nbsp; <span class="chip local">runs on M1 8 GB</span> <span class="chip cloud">cloud GPU</span> <span class="chip warn">licence caveat</span> &nbsp;·&nbsp; "verify" = we test it in the lab</p>
+
+<h2>0 · No OCR: read the text layer <span class="cost">▮▯▯▯▯▯</span></h2>
+<p class="why">Milliseconds per page on CPU. Covers every born-digital resume. This is the rung an ATS should use first.</p>
+<div class="table-wrap"><table>
+<tr><th>Tool</th><th>What it gives you</th><th>Licence</th><th>Your M1</th></tr>
+<tr><td><a href="https://github.com/jsvine/pdfplumber">pdfplumber</a></td><td>Every word with its coordinates, so you can rebuild column order yourself</td><td>MIT</td><td><span class="chip local">local</span></td></tr>
+<tr><td><a href="https://github.com/pypdfium2-team/pypdfium2">pypdfium2</a></td><td>Fast raw text through Google's PDFium</td><td>Apache-2.0 / BSD-3</td><td><span class="chip local">local</span></td></tr>
+<tr><td><a href="https://github.com/pymupdf/PyMuPDF">PyMuPDF</a></td><td>Fast and popular, but the licence is a trap for a commercial ATS</td><td>AGPL-3.0 or paid <span class="chip warn">caveat</span></td><td><span class="chip local">local</span></td></tr>
+</table></div>
+
+<h2>1 · Classic OCR engines <span class="cost">▮▮▯▯▯▯</span></h2>
+<p class="why">Detect text lines, then recognise characters. CPU-friendly. Needed for scanned or photographed resumes.</p>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th>Who · when</th><th>Size</th><th>Licence</th><th>Why it's here</th><th>Your M1</th></tr>
+<tr><td><a href="https://github.com/tesseract-ocr/tesseract">Tesseract 5</a></td><td>Open source · LSTM engine</td><td>small</td><td>Apache-2.0</td><td>The legacy default, and the OCR behind Apache Tika. Our baseline to beat.</td><td><span class="chip local">local</span></td></tr>
+<tr><td><a href="https://github.com/PaddlePaddle/PaddleOCR">PP-OCRv6</a></td><td>Baidu · PaddleOCR 3.7.0, Jun 2026</td><td>1.5M / 7.7M / 34.5M</td><td>Apache-2.0</td><td>Modern tiny OCR: 50 languages in one model, CPU speedups reported on Apple Silicon</td><td><span class="chip local">local</span></td></tr>
+</table></div>
+
+<h2>2 · Layout-aware pipelines <span class="cost">▮▮▮▯▯▯</span></h2>
+<p class="why">Several small models chained together: layout detection, reading order, OCR, tables. This is the rung that fixes two-column resumes.</p>
+<div class="table-wrap"><table>
+<tr><th>Pipeline</th><th>Who · when</th><th>Licence</th><th>Why it's here</th><th>Your M1</th></tr>
+<tr><td><a href="https://github.com/docling-project/docling">Docling</a></td><td>IBM, now LF AI &amp; Data · <a href="https://pypi.org/project/docling-mlx/0.1.0/">MLX package</a> Sep 2026</td><td>MIT</td><td>Layout, reading order and tables, with pluggable OCR engines. Runs on Apple Silicon.</td><td><span class="chip local">local</span></td></tr>
+<tr><td>Custom layout detector</td><td><a href="https://arxiv.org/abs/2510.09722">Alibaba resume paper</a> · 2025</td><td>n/a</td><td>YOLOv10 fine-tuned on about 500 annotated resumes to reorder multi-column layouts (about 20% of their traffic)</td><td><span class="chip local">verify</span></td></tr>
+</table></div>
+
+<h2>3 · Compact document VLMs (0.25 to 1.2B) <span class="cost">▮▮▮▮▯▯</span></h2>
+<p class="why">One vision-language model turns a page image straight into Markdown or JSON. These lead the main leaderboard. A GPU is preferred; some run on a Mac.</p>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th>Who · when</th><th>Size</th><th>Licence</th><th>Evidence</th><th>Your M1</th></tr>
+<tr><td><a href="https://huggingface.co/ibm-granite/granite-docling-258M-mlx">Granite-Docling</a></td><td>IBM · Sep 2025</td><td>258M</td><td>Apache-2.0</td><td>Structure-faithful output (DocTags). Official MLX build for Apple Silicon.</td><td><span class="chip local">local</span></td></tr>
+<tr><td><a href="https://huggingface.co/zai-org/GLM-OCR">GLM-OCR</a></td><td>Z.ai · 2026</td><td>0.9B</td><td>MIT (+ Apache-2.0 layout model)</td><td>OmniDocBench v1.6: 95.22. Ships for Ollama, vLLM and SGLang.</td><td><span class="chip local">verify</span></td></tr>
+<tr><td><a href="https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6">PaddleOCR-VL-1.6</a></td><td>Baidu · May 2026</td><td>0.9B</td><td>Apache-2.0</td><td>OmniDocBench v1.6: 96.34. NaViT encoder with the ERNIE-4.5-0.3B language model.</td><td><span class="chip local">verify</span></td></tr>
+<tr><td><a href="https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B">MinerU2.5-Pro</a></td><td>Shanghai AI Lab · May 2026</td><td>1.2B</td><td>Custom terms <span class="chip warn">caveat</span></td><td>OmniDocBench v1.6: 95.75. The gain came from better training data, not a bigger model.</td><td><span class="chip cloud">cloud</span></td></tr>
+<tr><td><a href="https://huggingface.co/blog/lightonai/lightonocr-2">LightOnOCR-2</a></td><td>LightOn · Jan 2026</td><td>1B</td><td>Apache-2.0</td><td>olmOCR-Bench: 83.2. Vendor reports 2× the speed of PaddleOCR-VL on an H100.</td><td><span class="chip cloud">cloud</span></td></tr>
+</table></div>
+
+<h2>4 · Mid-size OCR VLMs (3 to 9B) <span class="cost">▮▮▮▮▮▯</span></h2>
+<p class="why">Needs a real NVIDIA GPU with at least 12 GB. For us, that means one rented session.</p>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th>Who · when</th><th>Size</th><th>Licence</th><th>Evidence</th><th>Your M1</th></tr>
+<tr><td><a href="https://github.com/allenai/olmocr">olmOCR-2</a></td><td>AllenAI · Oct 2025</td><td>~7 to 8B</td><td>Apache-2.0</td><td>olmOCR-Bench: 82.4. About $178 per million pages on an H100 at $2.69/h.</td><td><span class="chip cloud">cloud</span></td></tr>
+<tr><td><a href="https://huggingface.co/blog/ocr-open-models">DeepSeek-OCR</a></td><td>DeepSeek · Oct 2025 (v2 Jan 2026)</td><td>3B</td><td>open (verify)</td><td>olmOCR-Bench: 75.7. Over 200K pages/day on one A100-40GB. Compresses pages into few vision tokens.</td><td><span class="chip cloud">cloud</span></td></tr>
+<tr><td><a href="https://github.com/datalab-to/chandra">Chandra OCR 2</a></td><td>Datalab · 2026</td><td>~9B</td><td>Modified OpenRAIL-M <span class="chip warn">caveat</span></td><td>olmOCR-Bench: 85.8 (<a href="https://blog.roboflow.com/best-open-source-ocr-models/">secondary source</a>). Commercial use is restricted.</td><td><span class="chip cloud">cloud</span></td></tr>
+</table></div>
+
+<h2>5 · General-purpose VLMs <span class="cost">▮▮▮▮▮▮</span></h2>
+<p class="why">OCR as a side skill of a big multimodal model. The top sizes need multiple GPUs.</p>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th>Size</th><th>Evidence</th><th>Your M1</th></tr>
+<tr><td>Qwen3-VL</td><td>2B to 235B</td><td>The 235B model scores 89.78 on OmniDocBench v1.6, below the 0.9B specialists (<a href="https://blog.roboflow.com/best-open-source-ocr-models/">Roboflow</a>). Best used downstream, turning text into candidate fields.</td><td><span class="chip cloud">cloud</span></td></tr>
+<tr><td>Closed APIs</td><td>n/a</td><td>Gemini, GPT, Claude, Mistral OCR. Reference ceilings only; out of scope.</td><td><span class="chip cloud">API</span></td></tr>
+</table></div>
+
+<h2>What leaderboards won't tell an ATS builder</h2>
+<ol>
+<li><strong>Different documents.</strong> <a href="https://github.com/opendatalab/OmniDocBench">OmniDocBench</a> rewards formulas, tables and dense pages. Resumes are sparse, and they fail on column order, sidebars, icons and header contact blocks.</li>
+<li><strong>Different metric.</strong> Leaderboards score whole-page text similarity. An ATS needs <em>field-level</em> accuracy (name, email, dates, employer), measured by aligning entities and computing field F1, as the <a href="https://arxiv.org/abs/2510.09722">Alibaba study</a> does.</li>
+<li><strong>Licence can veto the winner.</strong> AGPL (PyMuPDF), OpenRAIL-M commercial limits (Chandra) and custom terms (MinerU) all apply. Check before you benchmark.</li>
+<li><strong>Bigger isn't better.</strong> Specialists at 0.8 to 1.2B lead OmniDocBench v1.6. In the Alibaba study a fine-tuned 0.6B model beat a frontier LLM on resume F1 (0.964 vs 0.919) and was about 15× faster (1.54 s vs 22.71 s).</li>
+</ol>
+
+<h3>Watch list (too new to place)</h3>
+<p>TeleOCR (1.2B, 96.91) and OvisOCR2 (0.8B, 96.47) went to the top of the <a href="https://github.com/opendatalab/OmniDocBench">OmniDocBench leaderboard</a> on 11 Sep 2026. Also HPD-Parsing (PaddleOCR, Jul 2026).</p>
+
+<h3>The two benchmarks named here</h3>
+<p><strong>OmniDocBench</strong> (v1.7 since Apr 2026) scores whole-page parsing: text edit distance, table TEDS, formula CDM, reading-order edit distance. <strong><a href="https://github.com/allenai/olmocr">olmOCR-Bench</a></strong> runs 8,413 pass/fail unit tests over 1,403 PDF pages, including multi-column reading order, headers and footers, and old scans.</p>
+
+<footer>
+<p>Unclear on anything here? Ask your teacher (Claude) in the chat. Questions are the fastest way through this.</p>
+<p>Sources: <a href="https://github.com/opendatalab/OmniDocBench">OmniDocBench</a> · <a href="https://github.com/allenai/olmocr">olmOCR</a> · <a href="https://huggingface.co/blog/ocr-open-models">Hugging Face OCR guide</a> · <a href="https://github.com/PaddlePaddle/PaddleOCR">PaddleOCR</a> · <a href="https://huggingface.co/zai-org/GLM-OCR">GLM-OCR</a> · <a href="https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B">MinerU2.5-Pro</a> · <a href="https://huggingface.co/blog/lightonai/lightonocr-2">LightOnOCR-2</a> · <a href="https://huggingface.co/ibm-granite/granite-docling-258M-mlx">Granite-Docling MLX</a> · <a href="https://arxiv.org/abs/2510.09722">arXiv 2510.09722</a> · <a href="https://blog.roboflow.com/best-open-source-ocr-models/">Roboflow roundup (secondary)</a></p>
+</footer>
+</main>

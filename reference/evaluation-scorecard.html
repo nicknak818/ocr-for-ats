@@ -1,0 +1,24 @@
+<title>Evaluation Scorecard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/course.css">
+<main>
+<p class="kicker">Reference · OCR for ATS</p>
+<h1>The evaluation scorecard</h1>
+<p class="subtitle">Six questions for any OCR technique or vendor. Each lesson fills one in, and together they become your vendor-evaluation checklist.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Question</th><th>What it asks</th><th>How to check it</th><th>Ask the vendor</th><th>From</th></tr>
+<tr><td>1 · Input</td><td>What does it actually read: DOCX XML, a PDF text layer, or pixels?</td><td>Run the <a href="input-triage.html">input triage</a> on your files. Report every result split by file type.</td><td>Do you read the text layer when one exists, or OCR every page? What do you do with DOCX?</td><td><a href="../lessons/0001-whats-inside-a-resume-file.html">Lesson 1</a></td></tr>
+<tr><td>2 · Accuracy</td><td>How accurate is it on our own ground truth: character error rate, reading order, field-level F1?</td><td colspan="2"><span class="chip">to come</span> Metrics lesson</td><td>Arc step 3</td></tr>
+<tr><td>3 · Robustness</td><td>Two-column layouts, tables, icons, flattened or scanned PDFs?</td><td colspan="2"><span class="chip">to come</span> Built into the test set</td><td>Arc step 4</td></tr>
+<tr><td>4 · Cost and speed</td><td>Cost per 1K resumes, latency, hardware</td><td colspan="2"><span class="chip">to come</span> Measured in the lab</td><td>Arc step 5</td></tr>
+<tr><td>5 · Operability</td><td>Licence, self-host or API, PII and data residency, monitoring</td><td colspan="2"><span class="chip">to come</span> Deployment track</td><td>Arc steps 7 and 8</td></tr>
+<tr><td>6 · Evidence quality</td><td>Which benchmark and version? Reproducible? Vendor or independent?</td><td>First rule: a score on born-digital files says little about OCR, because those files carry their own characters.</td><td>Can you show accuracy split by file type, including image-only PDFs?</td><td><a href="../lessons/0001-whats-inside-a-resume-file.html">Lesson 1</a></td></tr>
+</table></div>
+
+<footer>
+<p>Unclear on anything here? Ask your teacher (Claude) in the chat.</p>
+<p>Related: <a href="input-triage.html">Input triage</a> · <a href="ocr-compute-ladder.html">OCR compute ladder</a></p>
+</footer>
+</main>
