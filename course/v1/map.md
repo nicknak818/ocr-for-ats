@@ -23,6 +23,8 @@ All five success criteria in [MISSION.md](../../MISSION.md) met, by walking the 
 
 ## Decisions so far
 
+- **2026-09-15, ticket 01 resolved**: baseline commit made; `data/private/` created (gitignored, empty); GitHub access set up (`gh` CLI, learner authenticated, repo `nicknak818/ocr-for-ats` created public and pushed as `main`). See [issues/01-make-the-first-git-commit.md](issues/01-make-the-first-git-commit.md).
+
 ## Not yet specified
 
 - **Lessons along the fixed arc**, starting with checking and taking lesson 0001 (the check needs the lesson server). Ticketed once the basics are done.
