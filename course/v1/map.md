@@ -24,6 +24,9 @@ All five success criteria in [MISSION.md](../../MISSION.md) met, by walking the 
 ## Decisions so far
 
 - **2026-09-15, ticket 01 resolved**: baseline commit made; `data/private/` created (gitignored, empty); GitHub access set up (`gh` CLI, learner authenticated, repo `nicknak818/ocr-for-ats` created public and pushed as `main`). See [issues/01-make-the-first-git-commit.md](issues/01-make-the-first-git-commit.md).
+- **2026-09-15, ticket 02 resolved**: `.venv/` created with pyenv 3.11.15, pip upgraded to 26.2.1; learner confirmed by running the activate + version check themselves, holding learning record 0003. See [issues/02-create-the-python-environment.md](issues/02-create-the-python-environment.md).
+- **2026-09-15, ticket 03 resolved**: `.claude/launch.json` runs `python3 -m http.server 8000` from the workspace root; lesson 0001 confirmed loading clean (all assets 200, no console errors). See [issues/03-set-up-the-lesson-server.md](issues/03-set-up-the-lesson-server.md).
+- **2026-09-15, ticket 04 resolved**: Tesseract 5.5.3 and Poppler 26.09.0 (`pdftotext`, `pdftoppm`) installed via Homebrew, both runs-locally, versions sourced to their Homebrew formulae. See [issues/04-install-the-document-tools.md](issues/04-install-the-document-tools.md).
 
 ## Not yet specified
 
