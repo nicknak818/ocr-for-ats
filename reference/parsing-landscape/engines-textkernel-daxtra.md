@@ -15,10 +15,13 @@
 - **Deep learning baseline**: The classic parser employs deep learning technology with proprietary domain knowledge and 20+ years of parsing experience ([Textkernel parser product page](https://www.textkernel.com/products-solutions/parser/))
 - **LLM enhancement**: The LLM Parser integrates ChatGPT capabilities with Textkernel's taxonomies and training. Textkernel claims to be "the first provider to introduce deep learning and now...the first to bring the market LLM-based parsing solutions" ([Textkernel product page](https://www.textkernel.com/products-solutions/parser/))
 - **LLM trade-offs**: The LLM parser offers "improved accuracy compared to the standard parser" but "processes several seconds slower" and can "generate information that is factually incorrect or misleading" ([LLM Parser documentation](https://developer.textkernel.com/tx-platform/v10/resume-parser/overview/llm-parser/))
+- **Parallel prompt routing (LLM mode)**: The LLM Parser uses specialized routing to direct resumes to appropriate LLM instances based on document characteristics rather than one-size-fits-all processing, balancing accuracy with computational efficiency ([Layout-Aware Parsing Meets Efficient LLMs: arxiv/2510.09722](https://arxiv.org/pdf/2510.09722))
 
 **OCR Capabilities**
 - **Automatic scanned document detection**: Textkernel applies OCR automatically when detecting scanned or photographed documents; approximately 5% of documents require OCR processing ([Resume parsing OCR addon](https://www.textkernel.com/resume-parsing-ocr-addon/))
 - **Automatic activation**: OCR "automatically activates only when necessary, minimizing processing time and optimizing efficiency" ([OCR addon page](https://www.textkernel.com/resume-parsing-ocr-addon/))
+- **OCR processing limits**: Limited to 10 pages maximum per document and 120-second timeout per OCR request; does not impact response time for non-image documents; incurs additional transaction costs ([Textkernel Developer Docs](https://developer.textkernel.com/tx-platform/v9/resume-parser/overview/getting-started/))
+- **Document conversion pipeline**: Three-stage processing: (1) document conversion to plain text, (2) text analysis to verify usability, (3) parsing if text is acceptable. Architecture note: "The vast majority of problems in parsing are not from processing the plain text, but from conversion to plain text" ([Textkernel Developer Docs](https://developer.textkernel.com/tx-platform/v9/resume-parser/overview/getting-started/))
 - **No OCR accuracy metrics provided**: Textkernel's documentation does not publish accuracy percentages for scanned documents or OCR-dependent fields
 
 **Processing Performance**
@@ -37,7 +40,9 @@
 - **Job description parsing**: 9 languages (focused on major markets) ([Textkernel product page](https://www.textkernel.com/products-solutions/parser/))
 
 **Layout Handling**
-- Automatic multi-column resume detection ([Textkernel product page](https://www.textkernel.com/products-solutions/parser/))
+- **Automatic multi-column resume detection**: Approximately 40% of resumes have multi-column or complex layouts ([Textkernel blog](https://www.textkernel.com/learn-support/blog/improving-extraction-from-column-resumes/))
+- **Machine learning column detection**: Textkernel evolved from rule-based to gradient boosting classifier approach for column separator detection. Measured performance improvements: visual gap classification 82%→91%, column separator detection 60%→82%, well-rendered documents 62%→90%, and contact information extraction fill rates +4–10% across 12,000+ test CVs ([Textkernel blog: Improving Extraction from Column Resumes](https://www.textkernel.com/learn-support/blog/improving-extraction-from-column-resumes/))
+- **Data-centric model training**: Uses delta annotation and manual verification to iteratively improve performance beyond pseudo-labeled datasets ([Textkernel blog](https://www.textkernel.com/learn-support/blog/improving-extraction-from-column-resumes/))
 - Custom field extraction via "FlexRequests" to define and parse user-defined fields ([Textkernel product page](https://www.textkernel.com/products-solutions/parser/))
 
 **Accuracy & Scale Claims**
@@ -86,6 +91,7 @@
 
 **Core Architecture**
 - **Hybrid grammar + statistical**: "A hybrid of a grammar and statistical-based parser, giving it the best of both worlds - the powerful high accuracy of the grammar-based parser combined with the continual machine learning capabilities of the statistical parser" ([Daxtra white papers](https://info.daxtra.com/white-papers))
+- **AI/LLM integration**: Uses "artificial intelligence and large language models (LLMs) to quickly analyze the meaning of resumes on a near-human level" ([Daxtra Ultimate Guide](https://info.daxtra.com/the-ultimate-guide-to-cv-resume-parsing))
 - **Machine learning integration**: "Comprehensive knowledge of geographical name, address and number formats, which is constantly updated by machine learning technology and their team of language engineers" ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
 - **Skills taxonomy ML**: "Top resume parsers use machine learning to stay on top of skills taxonomies...often predict skills that will be used in specific jobs by noting trends" ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
 
@@ -96,12 +102,14 @@
 
 **OCR Capabilities**
 - Supports "image file processing with OCR (Optical Character Recognition) function, handling formats like JPG, JPEG, and PNG" ([Daxtra resume parsing page](https://www.daxtra.com/products/resume-parsing-software/))
+- **Scanned PDF support**: Excels at "high-volume parsing and reliable OCR for scanned PDFs and images" per secondary sources, though primary Daxtra documentation does not quantify OCR accuracy or performance ([Mokahr Resume Parsing Guide](https://www.mokahr.io/articles/en/the-best-resume-parsing-for-pdf-and-images))
 - **Technical details sparse**: Primary documentation does not disclose OCR algorithm specifics, accuracy thresholds, or performance metrics
 
 **Processing Performance**
-- Scale: "Parses over 100 million CVs/resumes each month" ([Daxtra resume parsing page](https://www.daxtra.com/products/resume-parsing-software/))
-- Speed: "Extracts CV data automatically in seconds, compared to 10-15 minutes for manual extraction" ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
-- Data extraction: Over 150+ fields across multiple document styles ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
+- **Annual scale**: "Parses over 100 million CVs/resumes each month" — approximately 1.2 billion annually ([Daxtra resume parsing page](https://www.daxtra.com/products/resume-parsing-software/))
+- **Speed**: "Extracts CV data automatically in seconds, compared to 10-15 minutes for manual extraction" ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
+- **Data extraction**: Over 150+ fields across multiple document styles ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
+- **Deployment scale**: Operates as cloud-based or on-premise service with auto-scaling infrastructure to handle high-volume parsing ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
 
 ### Resume Formats / Inputs
 
@@ -168,11 +176,14 @@
 ### Resume Diversity Targets
 
 **Industry Coverage**
-- Daxtra maintains comprehensive taxonomies for: IT, finance & banking, insurance, legal, oil & gas, healthcare & pharmaceutical, engineering ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
+- Daxtra maintains comprehensive taxonomies for 57 industries: IT, finance & banking, insurance, legal, oil & gas, healthcare & pharmaceutical, engineering, and others ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
 - **Skills taxonomy scale**: Inbuilt skills taxonomy covering 57 industries with over 16,000 skills, expanding to nearly 100,000 aliases/synonyms ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
+- **Custom taxonomies**: Support for industry-specific customization of skills and qualifications taxonomies ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
 
 **Geographic/Regional**
-- 40+ language support and "vast native skills taxonomy" indicate global targeting ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
+- 40+ language support with built-in geographic knowledge of names, addresses, and number formats across regions ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
+- **Global office presence**: Operations in UK, US, Hong Kong, China, Japan, and Australia; partners with 1,500+ organizations globally ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
+- **Regional knowledge**: Comprehensive knowledge of geographical name, address, and number formats constantly updated via machine learning and language engineering teams ([Daxtra blog](https://info.daxtra.com/blog/daxtra-world-leader-in-cv-resume-parsing))
 - "Regular updates from language engineers" for each supported language ([Daxtra product page](https://www.daxtra.com/products/resume-parsing-software/))
 
 **Deployment Models**
@@ -244,6 +255,9 @@
 ### Acquisition & Market News
 - [Main Capital Partners: Sale of Textkernel to Bullhorn](https://main.nl/press-release/main-capital-partners-announces-sale-of-textkernel-to-bullhorn/)
 - [Staffing Industry Analysts: Textkernel Acquisition](https://www.staffingindustry.com/news/global-daily-news/world-textkernel-buys-us-based-ai-company-sovren)
+
+### Academic & Technical Papers
+- [Layout-Aware Parsing Meets Efficient LLMs: A Unified, Scalable Framework for Resume Information Extraction and Evaluation (arxiv/2510.09722)](https://arxiv.org/pdf/2510.09722) — Research on parallel prompt routing and layout-aware LLM-based resume parsing
 
 ---
 
